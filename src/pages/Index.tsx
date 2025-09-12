@@ -1,7 +1,7 @@
-import TimeTrackerApp from "@/components/TimeTrackerApp";
+import AuthWrapper from "@/components/AuthWrapper";
 
 const Index = () => {
-  return <TimeTrackerApp />;
+  return <AuthWrapper />;
 };
 
 export default Index;
