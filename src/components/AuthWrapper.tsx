@@ -1,38 +1,34 @@
-import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useSearchParams } from "react-router-dom";
 import Login from "./Login";
 import Signup from "./Signup";
+import InviteSignup from "./InviteSignup";
 import TimeTrackerApp from "./TimeTrackerApp";
 
 const AuthWrapper = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentView, setCurrentView] = useState<'login' | 'signup'>('login');
+  const { user, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('invite');
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
-  const handleSignup = () => {
-    setIsAuthenticated(true);
-  };
-
-  // Mock authentication check - replace with Supabase auth
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     const { data: { session } } = await supabase.auth.getSession();
-  //     setIsAuthenticated(!!session);
-  //   };
-  //   checkAuth();
-  // }, []);
-
-  if (isAuthenticated) {
+  if (user) {
     return <TimeTrackerApp />;
   }
 
-  return currentView === 'login' ? (
-    <Login onLogin={handleLogin} />
-  ) : (
-    <Signup onSignup={handleSignup} />
-  );
+  // If there's an invite token, show invite signup
+  if (inviteToken) {
+    return <InviteSignup inviteToken={inviteToken} />;
+  }
+
+  // Default auth flow - only show login, signup is invite-only
+  return <Login />;
 };
 
 export default AuthWrapper;

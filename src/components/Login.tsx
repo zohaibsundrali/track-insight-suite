@@ -7,17 +7,15 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Mail, Lock, Clock, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
-interface LoginProps {
-  onLogin: () => void;
-}
-
-const Login = ({ onLogin }: LoginProps) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,22 +23,13 @@ const Login = ({ onLogin }: LoginProps) => {
     setError("");
 
     try {
-      // TODO: Replace with Supabase Auth
-      // const { data, error } = await supabase.auth.signInWithPassword({
-      //   email,
-      //   password,
-      // });
+      const { error: signInError } = await signIn(email, password);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (email && password) {
-        onLogin();
-      } else {
-        setError("Please fill in all fields");
+      if (signInError) {
+        setError(signInError.message || "Invalid email or password");
       }
     } catch (err) {
-      setError("Invalid email or password");
+      setError("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -171,12 +160,12 @@ const Login = ({ onLogin }: LoginProps) => {
           </CardContent>
         </Card>
 
-        {/* Sign Up Link */}
+        {/* Admin Signup Link */}
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
-              Sign up
+            Administrator?{" "}
+            <Link to="/admin-signup" className="text-primary hover:underline font-medium">
+              Create Admin Account
             </Link>
           </p>
         </div>
