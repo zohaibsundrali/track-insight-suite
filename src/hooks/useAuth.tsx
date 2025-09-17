@@ -12,6 +12,8 @@ interface AuthContextType {
   signUpWithInvite: (email: string, password: string, inviteToken: string, userData?: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   validateInvite: (token: string) => Promise<{ valid: boolean; invitation?: any; error?: any }>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
+  updatePassword: (password: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -84,10 +86,32 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    // Check if email is verified
+    if (data.user && !data.user.email_confirmed_at) {
+      await supabase.auth.signOut();
+      return { error: { message: 'Please verify your email before logging in. Check your inbox for a verification link.' } };
+    }
+
+    // Log successful login attempt
+    if (data.user && !error) {
+      try {
+        await supabase.rpc('log_audit_event', {
+          action_type: 'user_login',
+          event_details: {
+            email: data.user.email,
+            login_method: 'email_password'
+          }
+        });
+      } catch (logError) {
+        console.warn('Failed to log audit event:', logError);
+      }
+    }
+    
     return { error };
   };
 
@@ -175,6 +199,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    const redirectUrl = `${window.location.origin}/reset-password`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+    return { error };
+  };
+
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error };
+  };
+
   const value = {
     user,
     session,
@@ -185,6 +222,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     signUpWithInvite,
     signOut,
     validateInvite,
+    resetPassword,
+    updatePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -7,6 +7,9 @@ import { AuthProvider } from "./hooks/useAuth";
 import AuthWrapper from "./components/AuthWrapper";
 import AdminSignup from "./components/AdminSignup";
 import Login from "./components/Login";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
+import AuditLogs from "./components/AuditLogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +24,9 @@ const App = () => (
           <Routes>
             <Route path="/admin-signup" element={<AdminSignup />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/audit-logs" element={<AuditLogs />} />
             <Route path="/" element={<AuthWrapper />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
